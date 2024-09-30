@@ -27,6 +27,7 @@ func parseGoFile(filePath string) (*GFP_GoFile, error) {
 	goFile := &GFP_GoFile{}
 
 	goFile.Package = file.Name.Name
+	goFile.Content = string(content)
 
 	if file.Doc != nil {
 		goFile.FileDoc = file.Doc.Text()

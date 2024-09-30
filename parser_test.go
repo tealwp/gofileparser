@@ -40,7 +40,7 @@ func (p Person) SayHello() {
 	}
 
 	// Parse the file
-	goFile, err := ParseGoFile(tempFile)
+	goFile, err := parseGoFile(tempFile)
 	if err != nil {
 		t.Fatalf("ParseGoFile failed: %v", err)
 	}
@@ -73,6 +73,10 @@ func (p Person) SayHello() {
 	if len(goFile.Methods) != 1 || goFile.Methods[0].Name != "SayHello" {
 		t.Errorf("Method not parsed correctly")
 	}
+
+	if goFile.Content != string(content) {
+		t.Errorf("File content not parsed correctly")
+	}
 }
 
 func TestParseGoPackage(t *testing.T) {
@@ -83,7 +87,7 @@ func TestParseGoPackage(t *testing.T) {
 	createTempGoFile(t, tempDir, "file_test.go", "package main\n\nfunc TestFunc() {}\n")
 
 	// Parse the package
-	files, err := ParseGoPackage(tempDir)
+	files, err := parseGoPackage(tempDir)
 	if err != nil {
 		t.Fatalf("ParseGoPackage failed: %v", err)
 	}

@@ -12,6 +12,7 @@ type GFP_GoFile struct {
 	Interfaces []GFP_Interface // List of interfaces
 	Comments   []GFP_Comment   // List of comments not associated with declarations
 	FileDoc    string          // File-level documentation comment
+	Content    string          // Entire file content
 }
 
 // GFP_Import represents a single import statement.
