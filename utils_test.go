@@ -70,7 +70,21 @@ func TestBlockStmtToString(t *testing.T) {
 					},
 				},
 			},
-			expected: "{\n\t42\n}",
+			expected: "{\n42\n}", // Removed leading tab
+		},
+		{
+			name: "Block with multiple statements",
+			block: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ExprStmt{
+						X: &ast.BasicLit{Kind: token.INT, Value: "1"},
+					},
+					&ast.ExprStmt{
+						X: &ast.BasicLit{Kind: token.INT, Value: "2"},
+					},
+				},
+			},
+			expected: "{\n1\n2\n}", // Removed leading tabs
 		},
 	}
 

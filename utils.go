@@ -6,6 +6,7 @@ import (
 	"go/format"
 	"go/token"
 	"path/filepath"
+	"strings"
 )
 
 // exprToString converts an ast.Expr to its string representation.
@@ -45,7 +46,13 @@ func blockStmtToString(block *ast.BlockStmt) string {
 	}
 	var buf bytes.Buffer
 	format.Node(&buf, token.NewFileSet(), block)
-	return buf.String()
+	content := buf.String()
+	lines := strings.Split(content, "\n")
+	for i, line := range lines {
+		lines[i] = strings.TrimPrefix(line, "\t")
+
+	}
+	return strings.Join(lines, "\n")
 }
 
 // isTestFile checks if a file is a Go test file.
