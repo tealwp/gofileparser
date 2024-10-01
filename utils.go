@@ -50,7 +50,6 @@ func blockStmtToString(block *ast.BlockStmt) string {
 	lines := strings.Split(content, "\n")
 	for i, line := range lines {
 		lines[i] = strings.TrimPrefix(line, "\t")
-
 	}
 	return strings.Join(lines, "\n")
 }
