@@ -12,7 +12,7 @@ import (
 
 // parseGoFile parses a Go source file and returns a GFP_GoFile structure.
 // This is the internal implementation of ParseGoFile.
-func parseGoFile(filePath string) (*GFP_GoFile, error) {
+func parseGoFile(filePath string) (*GFPGoFile, error) {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
@@ -24,7 +24,7 @@ func parseGoFile(filePath string) (*GFP_GoFile, error) {
 		return nil, err
 	}
 
-	goFile := &GFP_GoFile{}
+	goFile := &GFPGoFile{}
 
 	goFile.Package = file.Name.Name
 	goFile.Content = string(content)
@@ -61,13 +61,13 @@ func parseGoFile(filePath string) (*GFP_GoFile, error) {
 }
 
 // parseGoPackage parses all Go files in a directory and returns a slice of GFP_GoFile structures.
-func parseGoPackage(dirPath string) ([]*GFP_GoFile, error) {
+func parseGoPackage(dirPath string) ([]*GFPGoFile, error) {
 	files, err := filepath.Glob(filepath.Join(dirPath, "*.go"))
 	if err != nil {
 		return nil, fmt.Errorf("error finding Go files: %w", err)
 	}
 
-	var parsedFiles []*GFP_GoFile
+	var parsedFiles []*GFPGoFile
 	for _, file := range files {
 		// Skip test files
 		if filepath.Ext(file) == ".go" && !isTestFile(file) {
@@ -83,11 +83,11 @@ func parseGoPackage(dirPath string) ([]*GFP_GoFile, error) {
 }
 
 // parseImports extracts import declarations from a GenDecl.
-func parseImports(fset *token.FileSet, decl *ast.GenDecl) []GFP_Import {
-	var imports []GFP_Import
+func parseImports(fset *token.FileSet, decl *ast.GenDecl) []GFPImport {
+	var imports []GFPImport
 	for _, spec := range decl.Specs {
 		if is, ok := spec.(*ast.ImportSpec); ok {
-			imp := GFP_Import{
+			imp := GFPImport{
 				Path: is.Path.Value,
 				Line: fset.Position(is.Pos()).Line,
 			}
@@ -101,12 +101,12 @@ func parseImports(fset *token.FileSet, decl *ast.GenDecl) []GFP_Import {
 }
 
 // parseConstants extracts constant declarations from a GenDecl.
-func parseConstants(fset *token.FileSet, decl *ast.GenDecl) []GFP_Constant {
-	var constants []GFP_Constant
+func parseConstants(fset *token.FileSet, decl *ast.GenDecl) []GFPConstant {
+	var constants []GFPConstant
 	for _, spec := range decl.Specs {
 		if vs, ok := spec.(*ast.ValueSpec); ok {
 			for i, name := range vs.Names {
-				c := GFP_Constant{
+				c := GFPConstant{
 					Name: name.Name,
 					Type: exprToString(vs.Type),
 					Doc:  vs.Doc.Text(),
@@ -123,12 +123,12 @@ func parseConstants(fset *token.FileSet, decl *ast.GenDecl) []GFP_Constant {
 }
 
 // parseVariables extracts variable declarations from a GenDecl.
-func parseVariables(fset *token.FileSet, decl *ast.GenDecl) []GFP_Variable {
-	var variables []GFP_Variable
+func parseVariables(fset *token.FileSet, decl *ast.GenDecl) []GFPVariable {
+	var variables []GFPVariable
 	for _, spec := range decl.Specs {
 		if vs, ok := spec.(*ast.ValueSpec); ok {
 			for i, name := range vs.Names {
-				v := GFP_Variable{
+				v := GFPVariable{
 					Name: name.Name,
 					Type: exprToString(vs.Type),
 					Doc:  vs.Doc.Text(),
@@ -145,7 +145,7 @@ func parseVariables(fset *token.FileSet, decl *ast.GenDecl) []GFP_Variable {
 }
 
 // parseTypes extracts type declarations from a GenDecl and adds them to the GFP_GoFile.
-func parseTypes(fset *token.FileSet, decl *ast.GenDecl, goFile *GFP_GoFile) {
+func parseTypes(fset *token.FileSet, decl *ast.GenDecl, goFile *GFPGoFile) {
 	for _, spec := range decl.Specs {
 		if ts, ok := spec.(*ast.TypeSpec); ok {
 			if _, ok := ts.Type.(*ast.InterfaceType); ok {
@@ -158,8 +158,8 @@ func parseTypes(fset *token.FileSet, decl *ast.GenDecl, goFile *GFP_GoFile) {
 }
 
 // parseType extracts a single type definition from a TypeSpec.
-func parseType(fset *token.FileSet, ts *ast.TypeSpec, decl *ast.GenDecl) GFP_Type {
-	return GFP_Type{
+func parseType(fset *token.FileSet, ts *ast.TypeSpec, decl *ast.GenDecl) GFPType {
+	return GFPType{
 		Name: ts.Name.Name,
 		Def:  exprToString(ts.Type),
 		Doc:  decl.Doc.Text(),
@@ -168,8 +168,8 @@ func parseType(fset *token.FileSet, ts *ast.TypeSpec, decl *ast.GenDecl) GFP_Typ
 }
 
 // parseInterface extracts an interface definition from a TypeSpec.
-func parseInterface(fset *token.FileSet, ts *ast.TypeSpec) GFP_Interface {
-	iface := GFP_Interface{
+func parseInterface(fset *token.FileSet, ts *ast.TypeSpec) GFPInterface {
+	iface := GFPInterface{
 		Name: ts.Name.Name,
 		Doc:  ts.Doc.Text(),
 		Line: fset.Position(ts.Name.Pos()).Line,
@@ -183,8 +183,8 @@ func parseInterface(fset *token.FileSet, ts *ast.TypeSpec) GFP_Interface {
 }
 
 // parseInterfaceMethod extracts a method definition from an interface field.
-func parseInterfaceMethod(fset *token.FileSet, field *ast.Field) GFP_InterfaceMethod {
-	method := GFP_InterfaceMethod{
+func parseInterfaceMethod(fset *token.FileSet, field *ast.Field) GFPInterfaceMethod {
+	method := GFPInterfaceMethod{
 		Name:       field.Names[0].Name,
 		Parameters: parseParameters(field.Type.(*ast.FuncType).Params),
 		ReturnType: parseReturnType(field.Type.(*ast.FuncType).Results),
@@ -194,8 +194,8 @@ func parseInterfaceMethod(fset *token.FileSet, field *ast.Field) GFP_InterfaceMe
 }
 
 // parseFunction extracts a function definition from a FuncDecl.
-func parseFunction(fset *token.FileSet, decl *ast.FuncDecl) GFP_Function {
-	return GFP_Function{
+func parseFunction(fset *token.FileSet, decl *ast.FuncDecl) GFPFunction {
+	return GFPFunction{
 		Name:       decl.Name.Name,
 		Parameters: parseParameters(decl.Type.Params),
 		ReturnType: parseReturnType(decl.Type.Results),
@@ -206,8 +206,8 @@ func parseFunction(fset *token.FileSet, decl *ast.FuncDecl) GFP_Function {
 }
 
 // parseMethod extracts a method definition from a FuncDecl.
-func parseMethod(fset *token.FileSet, decl *ast.FuncDecl) GFP_Method {
-	return GFP_Method{
+func parseMethod(fset *token.FileSet, decl *ast.FuncDecl) GFPMethod {
+	return GFPMethod{
 		Receiver:   exprToString(decl.Recv.List[0].Type),
 		Name:       decl.Name.Name,
 		Parameters: parseParameters(decl.Type.Params),
@@ -219,12 +219,12 @@ func parseMethod(fset *token.FileSet, decl *ast.FuncDecl) GFP_Method {
 }
 
 // parseParameters extracts parameter definitions from a FieldList.
-func parseParameters(fields *ast.FieldList) []GFP_Parameter {
-	var params []GFP_Parameter
+func parseParameters(fields *ast.FieldList) []GFPParameter {
+	var params []GFPParameter
 	if fields != nil {
 		for _, field := range fields.List {
 			for _, name := range field.Names {
-				params = append(params, GFP_Parameter{
+				params = append(params, GFPParameter{
 					Name: name.Name,
 					Type: exprToString(field.Type),
 				})
@@ -250,11 +250,11 @@ func parseReturnType(fields *ast.FieldList) string {
 }
 
 // parseComments extracts comments from a File that are not associated with declarations.
-func parseComments(fset *token.FileSet, file *ast.File) []GFP_Comment {
-	var comments []GFP_Comment
+func parseComments(fset *token.FileSet, file *ast.File) []GFPComment {
+	var comments []GFPComment
 	for _, commentGroup := range file.Comments {
 		for _, comment := range commentGroup.List {
-			comments = append(comments, GFP_Comment{
+			comments = append(comments, GFPComment{
 				Text: comment.Text,
 				Line: fset.Position(comment.Pos()).Line,
 			})

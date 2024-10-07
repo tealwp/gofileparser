@@ -12,7 +12,7 @@ package gofileparser
 // This function is the main entry point for parsing a Go file. It reads the file,
 // parses its contents, and returns a structured representation of the Go file.
 // If any error occurs during file reading or parsing, it returns nil and the error.
-func ParseGoFile(filePath string) (*GFP_GoFile, error) {
+func ParseGoFile(filePath string) (*GFPGoFile, error) {
 	return parseGoFile(filePath)
 }
 
@@ -27,6 +27,6 @@ func ParseGoFile(filePath string) (*GFP_GoFile, error) {
 //
 // This function parses all .go files in the specified directory, excluding test files.
 // It returns a slice of parsed file structures and any error encountered during the process.
-func ParseGoPackage(dirPath string) ([]*GFP_GoFile, error) {
+func ParseGoPackage(dirPath string) ([]*GFPGoFile, error) {
 	return parseGoPackage(dirPath)
 }
