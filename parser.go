@@ -151,18 +151,18 @@ func parseTypes(fset *token.FileSet, decl *ast.GenDecl, goFile *GFP_GoFile) {
 			if _, ok := ts.Type.(*ast.InterfaceType); ok {
 				goFile.Interfaces = append(goFile.Interfaces, parseInterface(fset, ts))
 			} else {
-				goFile.Types = append(goFile.Types, parseType(fset, ts))
+				goFile.Types = append(goFile.Types, parseType(fset, ts, decl))
 			}
 		}
 	}
 }
 
 // parseType extracts a single type definition from a TypeSpec.
-func parseType(fset *token.FileSet, ts *ast.TypeSpec) GFP_Type {
+func parseType(fset *token.FileSet, ts *ast.TypeSpec, decl *ast.GenDecl) GFP_Type {
 	return GFP_Type{
 		Name: ts.Name.Name,
 		Def:  exprToString(ts.Type),
-		Doc:  ts.Doc.Text(),
+		Doc:  decl.Doc.Text(),
 		Line: fset.Position(ts.Name.Pos()).Line,
 	}
 }
